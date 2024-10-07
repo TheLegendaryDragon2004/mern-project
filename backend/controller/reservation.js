@@ -9,6 +9,14 @@ export const sendReservation = async (req, res, next) => {
         return next(new ErrorHandler("Please fill out the full form!", 400));
     }
 
+    // Convert seats to a number
+    const seatCount = Number(seats);
+
+    // Validate that seats is a valid number
+    if (isNaN(seatCount) || seatCount <= 0) {
+        return next(new ErrorHandler("Seats must be a valid positive number", 400));
+    }
+
     try {
         // Check the total number of seats in existing reservations
         const totalSeatsResult = await Reservation.aggregate([
@@ -19,12 +27,12 @@ export const sendReservation = async (req, res, next) => {
         const currentTotalSeats = totalSeatsResult.length ? totalSeatsResult[0].totalSeats : 0;
 
         // Check if the new reservation will exceed the maximum limit of 30 seats
-        if (currentTotalSeats + seats > 30) {
+        if (currentTotalSeats + seatCount > 30) {
             return next(new ErrorHandler("Maximum seat capacity reached (30). Cannot add more reservations.", 400));
         }
 
         // Create a new reservation entry
-        await Reservation.create({ firstName, lastName, email, phone, date, time, seats });
+        await Reservation.create({ firstName, lastName, email, phone, date, time, seats: seatCount });
 
         // Return a success response
         res.status(200).json({
@@ -38,4 +46,5 @@ export const sendReservation = async (req, res, next) => {
         }
         return next(error);
     }
+    11;
 };
