@@ -8,30 +8,27 @@ const Reservation = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState(""); // Changed to string
+  const [phone, setPhone] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [seats, setSeats] = useState("");
+  const [reservations, setReservations] = useState([]); // State for current reservations
   const navigate = useNavigate();
 
   const handleReservation = async (e) => {
     e.preventDefault();
     try {
-      // POST request to backend
       const { data } = await axios.post(
-        "http://localhost:4000/api/v1/reservation/send",  // Use /api/reservation/send assuming /api prefix
+        "http://localhost:4000/api/v1/reservation/send",
         { firstName, lastName, email, phone, date, time, seats },
         {
           headers: {
             "Content-Type": "application/json",
           },
-          withCredentials: true, // Send credentials (if needed, like cookies)
+          withCredentials: true,
         }
       );
-      // Show success message with toast
       toast.success(data.message);
-
-      // Reset form after successful submission
       setFirstName("");
       setLastName("");
       setPhone("");
@@ -39,12 +36,18 @@ const Reservation = () => {
       setTime("");
       setDate("");
       setSeats("");
-      
-      // Navigate to success page
       navigate("/success");
     } catch (error) {
-      // Handle error, show appropriate message
       toast.error(error.response?.data?.message || "An error occurred while making the reservation");
+    }
+  };
+
+  const fetchReservations = async () => {
+    try {
+      const { data } = await axios.get("http://localhost:4000/api/v1/reservation/current"); // Adjust the URL as needed
+      setReservations(data.reservations); // Assuming your API returns an object with a reservations array
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error fetching reservations");
     }
   };
 
@@ -109,13 +112,13 @@ const Reservation = () => {
                 />
               </div>
               <div>
-              <input
+                <input
                   type="number"
                   placeholder="Seats"
                   value={seats}
                   onChange={(e) => setSeats(e.target.value)}
                   required
-                />   
+                />
               </div>
               <button type="submit">
                 RESERVE NOW{" "}
@@ -124,6 +127,21 @@ const Reservation = () => {
                 </span>
               </button>
             </form>
+            <button onClick={fetchReservations} className="fetch-reservations-btn">
+              SHOW CURRENT RESERVATIONS
+            </button>
+            {reservations.length > 0 && (
+              <div className="current-reservations">
+                <h2>Current Reservations:</h2>
+                <ul>
+                  {reservations.map((reservation, index) => (
+                    <li key={index}>
+                      {reservation.firstName} {reservation.lastName} - {reservation.date} at {reservation.time} for {reservation.seats} seats
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
       </div>
