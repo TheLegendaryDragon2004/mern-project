@@ -5,6 +5,7 @@ import { sendReservation } from "../controller/reservation.js"; // Ensure the co
 const router = express.Router();
 
 
+
 router.post("/send", sendReservation); // Route: /api/reservation/send (with prefix /api)
 
 router.get('/current', async (req, res) => {
