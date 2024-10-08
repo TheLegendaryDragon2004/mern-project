@@ -13,6 +13,7 @@ const Reservation = () => {
   const [time, setTime] = useState("");
   const [seats, setSeats] = useState("");
   const [reservations, setReservations] = useState([]); // State for current reservations
+  const [showReservations, setShowReservations] = useState(false); // State for toggling reservations visibility
   const navigate = useNavigate();
 
   const handleReservation = async (e) => {
@@ -29,6 +30,7 @@ const Reservation = () => {
         }
       );
       toast.success(data.message);
+      // Reset form
       setFirstName("");
       setLastName("");
       setPhone("");
@@ -44,10 +46,18 @@ const Reservation = () => {
 
   const fetchReservations = async () => {
     try {
-      const { data } = await axios.get("http://localhost:4000/api/v1/reservation/current"); // Adjust the URL as needed
-      setReservations(data.reservations); // Assuming your API returns an object with a reservations array
+      const { data } = await axios.get("http://localhost:4000/api/v1/reservation/current");
+      setReservations(data.reservations);
     } catch (error) {
       toast.error(error.response?.data?.message || "Error fetching reservations");
+    }
+  };
+
+  // Toggle reservations display
+  const toggleReservations = () => {
+    setShowReservations((prev) => !prev); // Toggle the state
+    if (!showReservations) {
+      fetchReservations(); // Fetch reservations only when showing them
     }
   };
 
@@ -127,10 +137,10 @@ const Reservation = () => {
                 </span>
               </button>
             </form>
-            <button onClick={fetchReservations} className="fetch-reservations-btn">
-              SHOW CURRENT RESERVATIONS
+            <button onClick={toggleReservations} className="fetch-reservations-btn">
+              {showReservations ? "HIDE CURRENT RESERVATIONS" : "SHOW CURRENT RESERVATIONS"}
             </button>
-            {reservations.length > 0 && (
+            {showReservations && reservations.length > 0 && (
               <div className="current-reservations">
                 <h2>Current Reservations:</h2>
                 <ul>
@@ -140,6 +150,11 @@ const Reservation = () => {
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+            {showReservations && reservations.length === 0 && (
+              <div className="current-reservations">
+                <h2>No Current Reservations</h2>
               </div>
             )}
           </div>
